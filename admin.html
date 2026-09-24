@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>ExamShield — Admin</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span>🛡️</span> ExamShield
+      <small>Administrator</small>
+    </div>
+    <nav class="sidebar-menu">
+      <a href="#" data-section="dashboard" class="active">📊 Dashboard</a>
+      <a href="#" data-section="guru">📚 Data Guru</a>
+      <a href="#" data-section="siswa">🎓 Data Siswa</a>
+      <a href="#" data-section="ujian">📝 Data Ujian</a>
+      <a href="#" data-section="password">🔐 Ganti Password</a>
+      <a href="#" id="logoutBtn">⬅ Keluar</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <!-- Section: Dashboard -->
+    <section id="sec-dashboard" class="section active">
+      <h2>Dashboard Admin</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><h3 id="totalGuru">0</h3><p>Total Guru</p></div>
+        <div class="stat-card"><h3 id="totalSiswa">0</h3><p>Total Siswa</p></div>
+        <div class="stat-card"><h3 id="totalUjian">0</h3><p>Total Ujian</p></div>
+      </div>
+    </section>
+
+    <!-- Section: Data Guru -->
+    <section id="sec-guru" class="section hidden">
+      <div class="section-header">
+        <h2>Data Guru</h2>
+        <button class="btn-primary" data-modal="modalGuru">➕ Tambah Guru Baru</button>
+      </div>
+      <table class="data-table" id="tabelGuru">
+        <thead><tr><th>Nama</th><th>NIP</th><th>Mapel</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Section: Data Siswa -->
+    <section id="sec-siswa" class="section hidden">
+      <div class="section-header">
+        <h2>Data Siswa</h2>
+        <button class="btn-primary" data-modal="modalSiswa">➕ Tambah Siswa Baru</button>
+      </div>
+      <table class="data-table" id="tabelSiswa">
+        <thead><tr><th>Nama</th><th>NISN</th><th>Kelas</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Section: Data Ujian -->
+    <section id="sec-ujian" class="section hidden">
+      <div class="section-header">
+        <h2>Data Ujian</h2>
+        <button class="btn-primary" data-modal="modalUjian">📝 Buat Ujian Baru</button>
+      </div>
+      <table class="data-table" id="tabelUjian">
+        <thead><tr><th>Nama Ujian</th><th>Mapel</th><th>Kelas</th><th>Durasi</th><th>Token</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Section: Ganti Password -->
+    <section id="sec-password" class="section hidden">
+      <h2>Ganti Password</h2>
+      <form id="formGantiPassword" class="form-compact">
+        <input type="password" placeholder="Password Lama" required />
+        <input type="password" placeholder="Password Baru" required />
+        <input type="password" placeholder="Konfirmasi Password" required />
+        <button type="submit" class="btn-primary">🔐 Simpan Password</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Modal: Tambah Guru -->
+  <div id="modalGuru" class="modal hidden">
+    <div class="modal-content">
+      <h3>➕ Tambah Guru Baru</h3>
+      <p class="info">ℹ️ Username login guru = <b>NIP</b></p>
+      <form id="formGuru">
+        <input type="text" id="gNama" placeholder="Nama Lengkap" required />
+        <input type="text" id="gNip" placeholder="NIP (= Username Login)" required />
+        <input type="text" id="gMapel" placeholder="Mata Pelajaran" required />
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-close>Batal</button>
+          <button type="submit" class="btn-primary">💾 Simpan Guru</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah Siswa -->
+  <div id="modalSiswa" class="modal hidden">
+    <div class="modal-content">
+      <h3>➕ Tambah Siswa Baru</h3>
+      <p class="info">ℹ️ Username & password otomatis dari <b>NISN</b></p>
+      <form id="formSiswa">
+        <input type="text" id="sNama" placeholder="Nama Lengkap" required />
+        <input type="text" id="sNisn" placeholder="NISN" required />
+        <input type="text" id="sKelas" placeholder="Kelas (cth: XII IPA 1)" required />
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-close>Batal</button>
+          <button type="submit" class="btn-primary">💾 Simpan Siswa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Buat Ujian -->
+  <div id="modalUjian" class="modal hidden">
+    <div class="modal-content modal-lg">
+      <h3>📝 Buat Ujian Baru</h3>
+      <form id="formUjian">
+        <input type="text" id="uNama" placeholder="Nama Ujian" required />
+        <input type="text" id="uMapel" placeholder="Mata Pelajaran" required />
+        <input type="text" id="uKelas" placeholder="Kelas Peserta" required />
+        <input type="number" id="uDurai" placeholder="Durasi (menit)" required />
+        <input type="datetime-local" id="uMulai" required />
+        <input type="datetime-local" id="uSelesai" required />
+
+        <fieldset>
+          <legend>⚙️ Pengaturan Anti-Curang</legend>
+          <label><input type="checkbox" id="acAcakSoal" checked> Acak urutan soal</label>
+          <label><input type="checkbox" id="acAcakOpsi" checked> Acak pilihan jawaban</label>
+          <label><input type="checkbox" id="acFullscreen" checked> Wajib fullscreen</label>
+          <label><input type="checkbox" id="acNoCopy" checked> Nonaktifkan copy-paste</label>
+          <label><input type="checkbox" id="acDeteksiTab" checked> Deteksi pindah tab</label>
+          <label><input type="checkbox" id="acNoRightClick" checked> Nonaktifkan klik kanan</label>
+          <label><input type="checkbox" id="acOneSession" checked> Satu sesi login per siswa</label>
+          <label><input type="checkbox" id="acKamera"> Aktivasi kamera</label>
+        </fieldset>
+
+        <input type="number" id="uJumlahSoal" placeholder="Jumlah Soal dari Bank" required />
+        <input type="text" id="uToken" placeholder="Token Ujian (Kode Akses)" readonly />
+        <button type="button" id="btnGenToken" class="btn-secondary">🔄 Generate Token</button>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-close>Batal</button>
+          <button type="submit" class="btn-primary">💾 Simpan & Terbitkan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
