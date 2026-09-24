@@ -1,0 +1,36 @@
+.exam-mode { background: #f9fafb; }
+
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.warning-box {
+  background: white; padding: 32px; border-radius: 16px;
+  text-align: center; max-width: 500px;
+}
+.warning-box h2 { color: var(--danger); margin-bottom: 16px; }
+
+.exam-container { display: flex; flex-direction: column; min-height: 100vh; }
+.exam-header {
+  background: var(--primary); color: white; padding: 16px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.timer { font-size: 24px; font-weight: bold; font-family: monospace; }
+
+.exam-body { display: flex; flex: 1; padding: 20px; gap: 20px; }
+.question-area { flex: 1; background: white; padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); }
+
+.question-nav { width: 260px; background: white; padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow); }
+.nav-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0; }
+.nav-grid button {
+  aspect-ratio: 1; border: 1px solid var(--border); background: white;
+  border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.nav-grid button.answered { background: var(--success); color: white; border-color: var(--success); }
+.nav-grid button.marked { background: var(--warning); color: white; border-color: var(--warning); }
+.nav-grid button.current { outline: 3px solid var(--primary); }
+
+.dot { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin: 2px; }
+.dot.answered { background: var(--success); color: white; }
+.dot.marked { background: var(--warning); color: white; }
+.dot.empty { background: var(--border); }
