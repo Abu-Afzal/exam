@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>ExamShield — Guru</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span>🛡️</span> ExamShield
+      <small id="guruName">Guru</small>
+    </div>
+    <nav class="sidebar-menu">
+      <a href="#" data-section="dashboard" class="active">📊 Dashboard</a>
+      <a href="#" data-section="banksoal">📖 Bank Soal</a>
+      <a href="#" data-section="ujian">📝 Ujian Saya</a>
+      <a href="#" data-section="hasil">📈 Hasil Siswa</a>
+      <a href="#" data-section="password">🔐 Ganti Password</a>
+      <a href="#" id="logoutBtn">⬅ Keluar</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <section id="sec-dashboard" class="section active">
+      <h2>Dashboard Guru</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><h3 id="totalSoal">0</h3><p>Bank Soal</p></div>
+        <div class="stat-card"><h3 id="totalUjianGuru">0</h3><p>Ujian Aktif</p></div>
+      </div>
+    </section>
+
+    <section id="sec-banksoal" class="section hidden">
+      <div class="section-header">
+        <h2>Bank Soal</h2>
+        <button class="btn-primary" data-modal="modalSoal">📖 Input Soal</button>
+      </div>
+      <div id="daftarSoal"></div>
+    </section>
+
+    <section id="sec-ujian" class="section hidden">
+      <h2>Ujian Saya</h2>
+      <table class="data-table" id="tabelUjianGuru">
+        <thead><tr><th>Nama</th><th>Kelas</th><th>Token</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="sec-hasil" class="section hidden">
+      <h2>Hasil Ujian Siswa</h2>
+      <table class="data-table" id="tabelHasil">
+        <thead><tr><th>Siswa</th><th>Ujian</th><th>Nilai</th><th>Waktu</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="sec-password" class="section hidden">
+      <h2>Ganti Password</h2>
+      <form id="formGantiPassword" class="form-compact">
+        <input type="password" placeholder="Password Lama" required />
+        <input type="password" placeholder="Password Baru" required />
+        <input type="password" placeholder="Konfirmasi Password" required />
+        <button type="submit" class="btn-primary">🔐 Simpan Password</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Modal: Input Soal -->
+  <div id="modalSoal" class="modal hidden">
+    <div class="modal-content modal-lg">
+      <h3>📖 Input Soal ke Bank</h3>
+      <form id="formBatchSoal">
+        <select id="bsMapel" required>
+          <option value="">-- Pilih Mata Pelajaran --</option>
+        </select>
+        <select id="bsJenis">
+          <option value="pg">Pilihan Ganda (PG)</option>
+          <option value="pg_kompleks">PG Kompleks</option>
+          <option value="bs">Benar / Salah</option>
+          <option value="essay">Essay</option>
+        </select>
+        <select id="bsOpsi">
+          <option value="3">3 Opsi (A–C)</option>
+          <option value="4" selected>4 Opsi (A–D)</option>
+          <option value="5">5 Opsi (A–E)</option>
+        </select>
+        <input type="number" id="bsPoin" placeholder="Poin / Soal" value="10" />
+      </form>
+
+      <div id="soalContainer"></div>
+      <div class="modal-actions">
+        <button type="button" id="btnTambahSoal" class="btn-secondary">➕ Tambah Soal</button>
+        <button type="button" class="btn-secondary" data-close>Batal</button>
+        <button type="button" id="btnSimpanSemuaSoal" class="btn-primary">💾 Simpan Semua Soal</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/guru.js"></script>
+</body>
+</html>
