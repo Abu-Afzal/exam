@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>ExamShield — Login</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/login.css" />
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="login-logo">
+      <span class="shield-icon">🛡️</span>
+      <h1>ExamShield</h1>
+      <p>Sistem Ujian Online Anti-Curang</p>
+    </div>
+
+    <div class="role-tabs">
+      <button class="role-tab active" data-role="admin">👑 Admin</button>
+      <button class="role-tab" data-role="guru">📚 Guru</button>
+      <button class="role-tab" data-role="siswa">🎓 Siswa</button>
+    </div>
+
+    <form id="loginForm" class="login-form">
+      <div class="input-group">
+        <input type="text" id="username" placeholder="Username" required />
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="button" class="toggle-pass" data-target="password">👁️</button>
+      </div>
+      <div id="loginError" class="error-msg hidden">❌ Username atau password salah.</div>
+      <button type="submit" class="btn-primary">Masuk →</button>
+    </form>
+
+    <footer class="login-footer">
+      ExamShield v1.0 • Dilindungi enkripsi • Anti-curang aktif
+    </footer>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
