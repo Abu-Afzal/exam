@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExamShield — Ujian Berlangsung</title>
+  
+  <!-- CSS (Pakai ../ karena file ada di subfolder examshied/) -->
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/exam.css" />
+</head>
+<body class="exam-mode">
+
+  <!-- ============================================ -->
+  <!-- 1. OVERLAY PELANGGARAN (Pindah Tab)          -->
+  <!-- ============================================ -->
+  <div id="warningOverlay" class="overlay hidden">
+    <div class="warning-box">
+      <h2>⚠️ PELANGGARAN TERDETEKSI!</h2>
+      <p>Anda berpindah tab / keluar dari jendela ujian. Tindakan ini telah dicatat.</p>
+      <p>Pelanggaran ke: <b id="pelanggaranCount">1</b> | Maks 3 kali → Ujian otomatis dikumpulkan</p>
+      <button id="btnKembaliUjian" class="btn-primary">Kembali ke Ujian</button>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 2. OVERLAY FULLSCREEN                        -->
+  <!-- ============================================ -->
+  <div id="fullscreenPrompt" class="overlay">
+    <div class="warning-box">
+      <h2>️ Mode Fullscreen Diperlukan</h2>
+      <p>Ujian harus dilaksanakan dalam mode layar penuh untuk mencegah kecurangan.</p>
+      <button id="btnFullscreen" class="btn-primary">️ Masuk Mode Fullscreen</button>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 3. INTERFACE UJIAN UTAMA                     -->
+  <!-- ============================================ -->
+  <div id="examInterface" class="exam-container hidden">
+    
+    <!-- Header Ujian -->
+    <header class="exam-header">
+      <div class="exam-info">
+        <h2 id="examTitle">Ujian</h2>
+        <p id="examStudent">Nama: • Kelas:</p>
+      </div>
+      <div class="exam-timer">
+        <span>Soal Terjawab <b id="answeredCount">0</b> / <b id="totalSoal">0</b></span>
+        <div class="timer" id="timer">00:00</div>
+      </div>
+    </header>
+
+    <!-- Body Ujian -->
+    <div class="exam-body">
+      
+      <!-- Area Soal -->
+      <div class="question-area" id="questionArea">
+        <p style="text-align:center; color:#888;">Memuat soal...</p>
+      </div>
+
+      <!-- Navigasi Soal (Sidebar Kanan) -->
+      <aside class="question-nav">
+        <h4>Navigasi Soal</h4>
+        <div class="nav-legend">
+          <span class="dot answered">Terjawab</span>
+          <span class="dot marked">Ditandai 🚩</span>
+          <span class="dot empty">Belum</span>
+        </div>
+        <div class="nav-grid" id="navGrid">
+          <!-- Tombol nomor soal akan di-generate oleh JS -->
+        </div>
+        <button id="btnTandai" class="btn-secondary" style="width:100%; margin-top:10px;">🚩 Tandai Soal</button>
+        <button id="btnKumpulkan" class="btn-danger" style="width:100%; margin-top:10px;">📤 Kumpulkan Ujian</button>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 4. MODAL HASIL UJIAN                         -->
+  <!-- ============================================ -->
+  <div id="resultModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>📊 Detail Hasil Ujian</h3>
+      <div id="resultDetail" style="margin: 20px 0; font-size: 16px; line-height: 1.6;">
+        <!-- Detail nilai akan di-render oleh JS -->
+      </div>
+      <div class="modal-actions">
+        <button id="btnCetak" class="btn-secondary">🖨️ Cetak</button>
+        <button id="btnTutupHasil" class="btn-primary" data-close>Selesai & Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SCRIPT (Pakai ../ karena file ada di subfolder) -->
+  <!-- ============================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/exam-shield.js"></script>
+
+</body>
+</html>
