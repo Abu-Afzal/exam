@@ -1,237 +1,148 @@
-// ============================================
-// GURU DASHBOARD - SUPABASE VERSION
-// ============================================
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExamShield — Dashboard Guru</title>
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+</head>
+<body>
 
-// Auth guard
-const currentUser = requireAuth('guru');
-if (!currentUser) {
-  console.log('⚠️ Redirect ke login...');
-} else {
-  console.log('✅ Guru logged in:', currentUser.profile.nama);
-  initGuruDashboard();
-}
-
-async function initGuruDashboard() {
-  // Tampilkan nama guru di sidebar
-  const guruNameEl = document.getElementById('guruName');
-  if (guruNameEl) {
-    guruNameEl.textContent = currentUser.profile.nama;
-  }
-  
-  await refreshStats();
-  await refreshBankSoal();
-  await refreshUjianGuru();
-  await refreshHasil();
-}
-
-// ============================================
-// DASHBOARD STATS
-// ============================================
-async function refreshStats() {
-  try {
-    const soalList = await DB.getSoal(currentUser.profile.mapel);
-    const ujianList = await DB.getUjian();
-    const ujianGuru = ujianList ? ujianList.filter(u => u.guru_id === currentUser.profile.id) : [];
-    
-    const totalSoalEl = document.getElementById('totalSoal');
-    const totalUjianEl = document.getElementById('totalUjianGuru');
-    
-    if (totalSoalEl) totalSoalEl.textContent = soalList ? soalList.length : 0;
-    if (totalUjianEl) totalUjianEl.textContent = ujianGuru.length;
-  } catch (error) {
-    console.error('Error refresh stats:', error);
-  }
-}
-
-// ============================================
-// BANK SOAL
-// ============================================
-async function refreshBankSoal() {
-  try {
-    const soalList = await DB.getSoal(currentUser.profile.mapel);
-    const container = document.getElementById('daftarSoal');
-    
-    if (!container) return;
-    
-    if (!soalList || soalList.length === 0) {
-      container.innerHTML = '<p style="text-align:center;color:#888;">Belum ada soal di bank</p>';
-      return;
-    }
-    
-    container.innerHTML = soalList.map((s, i) => `
-      <div class="soal-item" style="background:#f9fafb;padding:12px;border-radius:8px;margin-bottom:10px;">
-        <b>Soal ${i+1}</b> <span style="color:#888;">(${s.jenis})</span>
-        <p>${s.teks_soal}</p>
-        <button class="btn-danger" onclick="hapusSoal('${s.id}')">Hapus</button>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error('Error refresh bank soal:', error);
-  }
-}
-
-window.hapusSoal = async (id) => {
-  if (!confirm('Hapus soal ini?')) return;
-  try {
-    const { error } = await supabaseClient.from('bank_soal').delete().eq('id', id);
-    if (error) throw error;
-    alert('✅ Soal dihapus');
-    await refreshBankSoal();
-    await refreshStats();
-  } catch (error) {
-    alert('❌ Gagal hapus: ' + error.message);
-  }
-};
-
-// Populate mapel dropdown
-const bsMapel = document.getElementById('bsMapel');
-if (bsMapel && currentUser.profile.mapel) {
-  bsMapel.innerHTML = `<option value="${currentUser.profile.mapel}">${currentUser.profile.mapel}</option>`;
-}
-
-// Form Input Soal (Batch)
-let soalBatch = [];
-
-function renderSoalBatch() {
-  const container = document.getElementById('soalContainer');
-  if (!container) return;
-  
-  container.innerHTML = soalBatch.map((s, i) => `
-    <div class="soal-item" style="background:#f9fafb;padding:12px;border-radius:8px;margin-bottom:10px;">
-      <b>Soal ${i+1}</b>
-      <textarea rows="2" placeholder="Teks soal" onchange="soalBatch[${i}].teks_soal=this.value" style="width:100%;margin:5px 0;">${s.teks_soal||''}</textarea>
-      <input type="text" placeholder="Opsi A" value="${s.opsi?.A||''}" onchange="soalBatch[${i}].opsi.A=this.value" style="width:100%;margin:2px 0;" />
-      <input type="text" placeholder="Opsi B" value="${s.opsi?.B||''}" onchange="soalBatch[${i}].opsi.B=this.value" style="width:100%;margin:2px 0;" />
-      <input type="text" placeholder="Opsi C" value="${s.opsi?.C||''}" onchange="soalBatch[${i}].opsi.C=this.value" style="width:100%;margin:2px 0;" />
-      <input type="text" placeholder="Opsi D" value="${s.opsi?.D||''}" onchange="soalBatch[${i}].opsi.D=this.value" style="width:100%;margin:2px 0;" />
-      <input type="text" placeholder="Jawaban Benar (A/B/C/D)" value="${s.jawaban||''}" onchange="soalBatch[${i}].jawaban=this.value" style="width:100%;margin:5px 0;" />
-      <button type="button" class="btn-danger" onclick="soalBatch.splice(${i},1);renderSoalBatch()">Hapus Soal Ini</button>
+  <!-- ============================================ -->
+  <!-- SIDEBAR                                      -->
+  <!-- ============================================ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span>🛡️</span> ExamShield
+      <small id="guruName">Guru</small>
     </div>
-  `).join('');
-}
+    <nav class="sidebar-menu">
+      <a href="#" data-section="dashboard" class="active">📊 Dashboard</a>
+      <a href="#" data-section="banksoal">📖 Bank Soal</a>
+      <a href="#" data-section="ujian"> Ujian Saya</a>
+      <a href="#" data-section="hasil">📈 Hasil Siswa</a>
+      <a href="#" data-section="password">🔐 Ganti Password</a>
+      <a href="#" id="logoutBtn">⬅ Keluar</a>
+    </nav>
+  </aside>
 
-const btnTambahSoal = document.getElementById('btnTambahSoal');
-if (btnTambahSoal) {
-  btnTambahSoal.addEventListener('click', () => {
-    soalBatch.push({ teks_soal: '', opsi: { A:'', B:'', C:'', D:'' }, jawaban: '' });
-    renderSoalBatch();
-  });
-}
+  <!-- ============================================ -->
+  <!-- KONTEN UTAMA                                 -->
+  <!-- ============================================ -->
+  <main class="content">
 
-const btnSimpanSemuaSoal = document.getElementById('btnSimpanSemuaSoal');
-if (btnSimpanSemuaSoal) {
-  btnSimpanSemuaSoal.addEventListener('click', async () => {
-    const mapel = document.getElementById('bsMapel')?.value || currentUser.profile.mapel;
-    const jenis = document.getElementById('bsJenis')?.value || 'pg';
-    const poin = parseInt(document.getElementById('bsPoin')?.value) || 10;
-    
-    if (soalBatch.length === 0) {
-      alert('Tambahkan minimal 1 soal!');
-      return;
-    }
-    
-    if (!mapel) {
-      alert('Pilih mata pelajaran!');
-      return;
-    }
-    
-    try {
-      let berhasil = 0;
-      for (const s of soalBatch) {
-        if (!s.teks_soal || !s.jawaban) continue;
-        
-        const soal = {
-          guru_id: currentUser.profile.id,
-          mapel: mapel,
-          jenis: jenis,
-          teks_soal: s.teks_soal,
-          opsi: s.opsi,
-          jawaban: s.jawaban,
-          poin: poin
-        };
-        
-        await DB.saveSoal(soal);
-        berhasil++;
-      }
-      
-      alert(`✅ ${berhasil} soal berhasil disimpan ke bank ${mapel}`);
-      soalBatch = [];
-      renderSoalBatch();
-      document.getElementById('modalSoal').classList.add('hidden');
-      await refreshBankSoal();
-      await refreshStats();
-      
-    } catch (error) {
-      console.error('Error simpan soal:', error);
-      alert('❌ Gagal menyimpan soal: ' + error.message);
-    }
-  });
-}
+    <!-- Section: Dashboard -->
+    <section id="sec-dashboard" class="section active">
+      <h2>Dashboard Guru</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="totalSoal">0</h3>
+          <p>Bank Soal</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="totalUjianGuru">0</h3>
+          <p>Ujian Aktif</p>
+        </div>
+      </div>
+    </section>
 
-// ============================================
-// UJIAN SAYA
-// ============================================
-async function refreshUjianGuru() {
-  try {
-    const ujianList = await DB.getUjian();
-    const ujianGuru = ujianList ? ujianList.filter(u => u.guru_id === currentUser.profile.id) : [];
-    const tbody = document.querySelector('#tabelUjianGuru tbody');
-    
-    if (!tbody) return;
-    
-    if (ujianGuru.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Belum ada ujian</td></tr>';
-      return;
-    }
-    
-    tbody.innerHTML = ujianGuru.map(u => `
-      <tr>
-        <td>${u.nama}</td>
-        <td>${u.kelas}</td>
-        <td><b>${u.token}</b></td>
-        <td><span style="color:green;">● ${u.status || 'aktif'}</span></td>
-      </tr>
-    `).join('');
-  } catch (error) {
-    console.error('Error refresh ujian guru:', error);
-  }
-}
+    <!-- Section: Bank Soal -->
+    <section id="sec-banksoal" class="section hidden">
+      <div class="section-header">
+        <h2>Bank Soal</h2>
+        <button class="btn-primary" data-modal="modalSoal">📖 Input Soal</button>
+      </div>
+      <div id="daftarSoal">
+        <p style="text-align:center;color:#888;">Memuat soal...</p>
+      </div>
+    </section>
 
-// ============================================
-// HASIL UJIAN SISWA
-// ============================================
-async function refreshHasil() {
-  try {
-    const hasilList = await DB.getHasil();
-    const ujianList = await DB.getUjian();
-    const ujianGuruIds = ujianList 
-      ? ujianList.filter(u => u.guru_id === currentUser.profile.id).map(u => u.id)
-      : [];
-    
-    const hasilGuru = hasilList 
-      ? hasilList.filter(h => ujianGuruIds.includes(h.ujian_id))
-      : [];
-    
-    const tbody = document.querySelector('#tabelHasil tbody');
-    if (!tbody) return;
-    
-    if (hasilGuru.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Belum ada hasil</td></tr>';
-      return;
-    }
-    
-    tbody.innerHTML = hasilGuru.map(h => {
-      const ujian = ujianList?.find(u => u.id === h.ujian_id);
-      return `
-        <tr>
-          <td>${h.siswa || '-'}</td>
-          <td>${ujian?.nama || '-'}</td>
-          <td><b>${h.nilai}</b></td>
-          <td>${h.submitted_at ? new Date(h.submitted_at).toLocaleString('id-ID') : '-'}</td>
-        </tr>
-      `;
-    }).join('');
-  } catch (error) {
-    console.error('Error refresh hasil:', error);
-  }
-}
+    <!-- Section: Ujian Saya -->
+    <section id="sec-ujian" class="section hidden">
+      <h2>Ujian Saya</h2>
+      <table class="data-table" id="tabelUjianGuru">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>Kelas</th>
+            <th>Token</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Section: Hasil Siswa -->
+    <section id="sec-hasil" class="section hidden">
+      <h2>Hasil Ujian Siswa</h2>
+      <table class="data-table" id="tabelHasil">
+        <thead>
+          <tr>
+            <th>Siswa</th>
+            <th>Ujian</th>
+            <th>Nilai</th>
+            <th>Waktu</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Section: Ganti Password -->
+    <section id="sec-password" class="section hidden">
+      <h2>Ganti Password</h2>
+      <form id="formGantiPassword" class="form-compact">
+        <input type="password" placeholder="Password Lama" required />
+        <input type="password" placeholder="Password Baru" required />
+        <input type="password" placeholder="Konfirmasi Password" required />
+        <button type="submit" class="btn-primary">🔐 Simpan Password</button>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- ============================================ -->
+  <!-- MODAL: INPUT SOAL                            -->
+  <!-- ============================================ -->
+  <div id="modalSoal" class="modal hidden">
+    <div class="modal-content modal-lg">
+      <h3>📖 Input Soal ke Bank</h3>
+      <form id="formBatchSoal">
+        <select id="bsMapel" required>
+          <option value="">-- Pilih Mata Pelajaran --</option>
+        </select>
+        <select id="bsJenis">
+          <option value="pg">Pilihan Ganda (PG)</option>
+          <option value="pg_kompleks">PG Kompleks</option>
+          <option value="bs">Benar / Salah</option>
+          <option value="essay">Essay</option>
+        </select>
+        <select id="bsOpsi">
+          <option value="3">3 Opsi (A–C)</option>
+          <option value="4" selected>4 Opsi (A–D)</option>
+          <option value="5">5 Opsi (A–E)</option>
+        </select>
+        <input type="number" id="bsPoin" placeholder="Poin / Soal" value="10" />
+      </form>
+
+      <div id="soalContainer"></div>
+      <div class="modal-actions">
+        <button type="button" id="btnTambahSoal" class="btn-secondary">➕ Tambah Soal</button>
+        <button type="button" class="btn-secondary" data-close>Batal</button>
+        <button type="button" id="btnSimpanSemuaSoal" class="btn-primary"> Simpan Semua Soal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SCRIPT (PENTING: URUTAN HARUS BENAR)         -->
+  <!-- ============================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/guru.js"></script>
+
+</body>
+</html>
