@@ -1,13 +1,12 @@
 // ============================================
-// ADMIN DASHBOARD - SUPABASE VERSION (ASYNC)
+// ADMIN DASHBOARD - SUPABASE VERSION (FINAL)
 // ============================================
 
-// Auth guard
 const currentUser = requireAuth('admin');
 if (!currentUser) {
   console.log('Redirect ke login...');
 } else {
-  console.log('Admin logged in:', currentUser.profile.nama);
+  console.log('✅ Admin logged in:', currentUser.profile.nama);
   initAdminDashboard();
 }
 
@@ -54,7 +53,7 @@ async function refreshGuru() {
         <td>${g.nip_nisn}</td>
         <td>${g.mapel || '-'}</td>
         <td>
-          <button class="btn-danger" onclick="hapusGuru('${g.id}', '${g.nip_nisn}')">Hapus</button>
+          <button class="btn-danger" onclick="hapusGuru('${g.id}', '${g.nama}')">Hapus</button>
         </td>
       </tr>
     `).join('');
@@ -78,33 +77,23 @@ if (formGuru) {
       return;
     }
     
+    const email = `${nip.toLowerCase()}@examshield.id`;
+    const password = nip; // Password default = NIP
+    
     try {
-      const email = `${nip.toLowerCase()}@examshield.id`;
-      const password = nip; // Password default = NIP
-      
-      // 1. Buat user di Authentication
-      const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password,
-        options: { data: { role: 'guru' } }
+      // Panggil function via RPC
+      const { data, error } = await supabaseClient.rpc('create_user_and_profile', {
+        p_email: email,
+        p_password: password,
+        p_role: 'guru',
+        p_nama: nama,
+        p_nip_nisn: nip,
+        p_mapel: mapel
       });
       
-      if (authError) console.warn('Auth warning:', authError.message);
+      if (error) throw error;
       
-      // 2. Insert profile
-      const { error: profileError } = await supabaseClient
-        .from('profiles')
-        .insert({
-          id: authData?.user?.id || crypto.randomUUID(),
-          role: 'guru',
-          nama: nama,
-          nip_nisn: nip,
-          mapel: mapel
-        });
-      
-      if (profileError) throw profileError;
-      
-      alert(`✅ Guru berhasil ditambahkan!\n\nUsername (Email): ${email}\nPassword: ${nip}`);
+      alert(`✅ Guru berhasil ditambahkan!\n\n Email: ${email}\n Password: ${nip}\n\nSimpan password ini untuk diberikan kepada guru.`);
       
       formGuru.reset();
       document.getElementById('modalGuru').classList.add('hidden');
@@ -118,15 +107,20 @@ if (formGuru) {
   });
 }
 
-window.hapusGuru = async (id, nip) => {
-  if (!confirm(`Hapus guru "${nip}"?`)) return;
+window.hapusGuru = async (id, nama) => {
+  if (!confirm(`Hapus guru "${nama}"?`)) return;
   try {
-    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+    const { data, error } = await supabaseClient.rpc('delete_user_and_profile', {
+      p_user_id: id
+    });
+    
     if (error) throw error;
+    
     alert('✅ Guru dihapus');
     await refreshGuru();
     await refreshStats();
   } catch (error) {
+    console.error('Error hapus guru:', error);
     alert('❌ Gagal hapus: ' + error.message);
   }
 };
@@ -150,7 +144,7 @@ async function refreshSiswa() {
         <td>${s.nip_nisn}</td>
         <td>${s.kelas || '-'}</td>
         <td>
-          <button class="btn-danger" onclick="hapusSiswa('${s.id}', '${s.nip_nisn}')">Hapus</button>
+          <button class="btn-danger" onclick="hapusSiswa('${s.id}', '${s.nama}')">Hapus</button>
         </td>
       </tr>
     `).join('');
@@ -173,29 +167,22 @@ if (formSiswa) {
       return;
     }
     
+    const email = `${nisn.toLowerCase()}@examshield.id`;
+    const password = nisn;
+    
     try {
-      const email = `${nisn.toLowerCase()}@examshield.id`;
-      const password = nisn;
-      
-      const { data: authData } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password,
-        options: { data: { role: 'siswa' } }
+      const { data, error } = await supabaseClient.rpc('create_user_and_profile', {
+        p_email: email,
+        p_password: password,
+        p_role: 'siswa',
+        p_nama: nama,
+        p_nip_nisn: nisn,
+        p_kelas: kelas
       });
-      
-      const { error } = await supabaseClient
-        .from('profiles')
-        .insert({
-          id: authData?.user?.id || crypto.randomUUID(),
-          role: 'siswa',
-          nama: nama,
-          nip_nisn: nisn,
-          kelas: kelas
-        });
       
       if (error) throw error;
       
-      alert(`✅ Siswa berhasil ditambahkan!\n\nUsername (Email): ${email}\nPassword: ${nisn}`);
+      alert(`✅ Siswa berhasil ditambahkan!\n\n📧 Email: ${email}\n🔑 Password: ${nisn}\n\nSimpan password ini untuk diberikan kepada siswa.`);
       
       formSiswa.reset();
       document.getElementById('modalSiswa').classList.add('hidden');
@@ -209,15 +196,20 @@ if (formSiswa) {
   });
 }
 
-window.hapusSiswa = async (id, nisn) => {
-  if (!confirm(`Hapus siswa "${nisn}"?`)) return;
+window.hapusSiswa = async (id, nama) => {
+  if (!confirm(`Hapus siswa "${nama}"?`)) return;
   try {
-    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+    const { data, error } = await supabaseClient.rpc('delete_user_and_profile', {
+      p_user_id: id
+    });
+    
     if (error) throw error;
+    
     alert('✅ Siswa dihapus');
     await refreshSiswa();
     await refreshStats();
   } catch (error) {
+    console.error('Error hapus siswa:', error);
     alert('❌ Gagal hapus: ' + error.message);
   }
 };
@@ -296,7 +288,7 @@ if (formUjian) {
     
     try {
       await DB.saveUjian(ujian);
-      alert(`✅ Ujian diterbitkan!\n\nToken: ${token}`);
+      alert(`✅ Ujian diterbitkan!\n\n Token: ${token}\n\nBagikan token ini kepada siswa.`);
       
       formUjian.reset();
       document.getElementById('modalUjian').classList.add('hidden');
