@@ -6,6 +6,50 @@
   <title>ExamShield — Dashboard Guru</title>
   <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="../css/dashboard.css" />
+  <style>
+    /* Inline CSS untuk memastikan tampilan bagus */
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #374151;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sidebar-header span {
+      font-size: 28px;
+    }
+    .sidebar-header small {
+      display: block;
+      color: #9ca3af;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .sidebar-header div {
+      flex: 1;
+    }
+    .sidebar-header strong {
+      color: white;
+      font-size: 15px;
+      display: block;
+    }
+    .stat-card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .stat-card h3 {
+      font-size: 36px;
+      color: #2563eb;
+      margin: 0 0 8px 0;
+    }
+    .stat-card p {
+      color: #6b7280;
+      margin: 0;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
 
@@ -14,8 +58,11 @@
   <!-- ============================================ -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <span>🛡️</span> ExamShield
-      <small id="guruName">Guru</small>
+      <span>🛡️</span>
+      <div>
+        <strong>ExamShield</strong>
+        <small id="guruName">Memuat...</small>
+      </div>
     </div>
     <nav class="sidebar-menu">
       <a href="#" data-section="dashboard" class="active">📊 Dashboard</a>
@@ -23,7 +70,7 @@
       <a href="#" data-section="ujian"> Ujian Saya</a>
       <a href="#" data-section="hasil">📈 Hasil Siswa</a>
       <a href="#" data-section="password">🔐 Ganti Password</a>
-      <a href="#" id="logoutBtn">⬅ Keluar</a>
+      <a href="#" id="logoutBtn"> Keluar</a>
     </nav>
   </aside>
 
@@ -131,13 +178,13 @@
       <div class="modal-actions">
         <button type="button" id="btnTambahSoal" class="btn-secondary">➕ Tambah Soal</button>
         <button type="button" class="btn-secondary" data-close>Batal</button>
-        <button type="button" id="btnSimpanSemuaSoal" class="btn-primary"> Simpan Semua Soal</button>
+        <button type="button" id="btnSimpanSemuaSoal" class="btn-primary">💾 Simpan Semua Soal</button>
       </div>
     </div>
   </div>
 
   <!-- ============================================ -->
-  <!-- SCRIPT (PENTING: URUTAN HARUS BENAR)         -->
+  <!-- SCRIPT                                       -->
   <!-- ============================================ -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-client.js"></script>
