@@ -18,40 +18,73 @@ if (document.getElementById('loginForm')) {
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Karena kita pakai email di Supabase, input username sekarang dianggap email
     const email = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
     const err = document.getElementById('loginError');
     
     err.classList.add('hidden');
-    err.textContent = '❌ Sedang memproses...';
-    err.classList.remove('hidden');
 
     try {
+      console.log('🔄 Login attempt for:', email);
+      
       // 1. Login ke Supabase Auth
-      const { user } = await Auth.signIn(email, password);
+      const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
       
-      // 2. Ambil Profile untuk cek Role
-      const currentUser = await Auth.getCurrentUser();
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw new Error('Email atau password salah');
+      }
       
-      if (!currentUser || !currentUser.profile) {
+      if (!authData.user) {
+        throw new Error('User tidak ditemukan');
+      }
+      
+      console.log('✅ Auth berhasil, user ID:', authData.user.id);
+      
+      // 2. Ambil Profile dari database
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+      
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw new Error('Profile tidak ditemukan di database');
+      }
+      
+      if (!profile) {
         throw new Error('Profile tidak ditemukan');
       }
-
+      
+      console.log('✅ Profile ditemukan:', profile);
+      
       // 3. Validasi Role
-      if (currentUser.profile.role !== currentRole) {
-        await Auth.signOut();
-        err.textContent = ` Akun ini terdaftar sebagai ${currentUser.profile.role}, bukan ${currentRole}.`;
+      if (profile.role !== currentRole) {
+        await supabaseClient.auth.signOut();
+        err.textContent = `⚠️ Akun ini terdaftar sebagai ${profile.role.toUpperCase()}, bukan ${currentRole}.`;
+        err.classList.remove('hidden');
         return;
       }
 
       // 4. Simpan Session & Redirect
-      sessionStorage.setItem('user', JSON.stringify(currentUser));
+      const userData = {
+        id: authData.user.id,
+        email: authData.user.email,
+        profile: profile
+      };
+      
+      sessionStorage.setItem('user', JSON.stringify(userData));
+      console.log('📝 Session disimpan, redirect ke', currentRole + '.html');
       window.location.href = `${currentRole}.html`;
 
     } catch (error) {
-      console.error(error);
-      err.textContent = '❌ Email atau password salah, atau akun belum dikonfirmasi.';
+      console.error('❌ Login error:', error);
+      err.textContent = '❌ ' + error.message;
+      err.classList.remove('hidden');
     }
   });
 
@@ -65,14 +98,14 @@ if (document.getElementById('loginForm')) {
 }
 
 // ============================================
-// LOGIKA LOGOUT (Untuk semua halaman dashboard)
+// LOGOUT
 // ============================================
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     if (confirm('Yakin ingin keluar?')) {
-      await Auth.signOut();
+      await supabaseClient.auth.signOut();
       sessionStorage.removeItem('user');
       window.location.href = 'index.html';
     }
@@ -80,7 +113,7 @@ if (logoutBtn) {
 }
 
 // ============================================
-// NAVIGASI SIDEBAR & MODAL (Tetap sama)
+// NAVIGASI SIDEBAR & MODAL
 // ============================================
 document.querySelectorAll('.sidebar-menu a[data-section]').forEach(link => {
   link.addEventListener('click', e => {
@@ -89,34 +122,49 @@ document.querySelectorAll('.sidebar-menu a[data-section]').forEach(link => {
     link.classList.add('active');
     const target = link.dataset.section;
     document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(`sec-${target}`).classList.remove('hidden');
+    const targetEl = document.getElementById(`sec-${target}`);
+    if (targetEl) targetEl.classList.remove('hidden');
   });
 });
 
 document.querySelectorAll('[data-modal]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.getElementById(btn.dataset.modal).classList.remove('hidden');
+    const modalId = btn.dataset.modal;
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('hidden');
   });
 });
+
 document.querySelectorAll('[data-close]').forEach(btn => {
   btn.addEventListener('click', () => {
-    btn.closest('.modal').classList.add('hidden');
+    const modal = btn.closest('.modal');
+    if (modal) modal.classList.add('hidden');
   });
 });
 
 // ============================================
-// AUTH GUARD (Cek login di setiap halaman)
+// AUTH GUARD
 // ============================================
 function requireAuth(role) {
   const userStr = sessionStorage.getItem('user');
   if (!userStr) {
+    console.log('⚠️ Tidak ada session, redirect ke login');
     window.location.href = 'index.html';
     return null;
   }
-  const user = JSON.parse(userStr);
-  if (user.profile.role !== role) {
+  
+  try {
+    const user = JSON.parse(userStr);
+    if (!user.profile || user.profile.role !== role) {
+      console.log('️ Role tidak cocok, redirect ke login');
+      window.location.href = 'index.html';
+      return null;
+    }
+    console.log('✅ Auth guard passed untuk', role);
+    return user;
+  } catch (error) {
+    console.error('Error parse session:', error);
     window.location.href = 'index.html';
     return null;
   }
-  return user;
 }
