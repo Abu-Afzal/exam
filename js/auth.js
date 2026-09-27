@@ -75,7 +75,7 @@ if (document.getElementById('loginForm')) {
       
       // ✅ PERBAIKAN PATH: redirect ke folder examshield/
       console.log('📝 Session disimpan, redirect ke examshield/' + currentRole + '.html');
-      window.location.href = `examshield/${currentRole}.html`;
+      window.location.href = `examshied/${currentRole}.html`;
 
     } catch (error) {
       console.error('❌ Login error:', error);
