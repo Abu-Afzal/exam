@@ -3,9 +3,8 @@
 // ============================================
 
 if (document.getElementById('loginForm')) {
-  let currentRole = 'admin'; // Default role yang dipilih di tab
+  let currentRole = 'admin';
 
-  // Logic Tab Role
   document.querySelectorAll('.role-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
@@ -14,7 +13,6 @@ if (document.getElementById('loginForm')) {
     });
   });
 
-  // Logic Submit Login
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -27,7 +25,6 @@ if (document.getElementById('loginForm')) {
     try {
       console.log('🔄 Login attempt for:', email);
       
-      // 1. Login ke Supabase Auth
       const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
         email: email,
         password: password
@@ -44,7 +41,6 @@ if (document.getElementById('loginForm')) {
       
       console.log('✅ Auth berhasil, user ID:', authData.user.id);
       
-      // 2. Ambil Profile dari database
       const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
         .select('*')
@@ -62,7 +58,6 @@ if (document.getElementById('loginForm')) {
       
       console.log('✅ Profile ditemukan:', profile);
       
-      // 3. Validasi Role
       if (profile.role !== currentRole) {
         await supabaseClient.auth.signOut();
         err.textContent = `⚠️ Akun ini terdaftar sebagai ${profile.role.toUpperCase()}, bukan ${currentRole}.`;
@@ -70,7 +65,6 @@ if (document.getElementById('loginForm')) {
         return;
       }
 
-      // 4. Simpan Session & Redirect
       const userData = {
         id: authData.user.id,
         email: authData.user.email,
@@ -78,8 +72,10 @@ if (document.getElementById('loginForm')) {
       };
       
       sessionStorage.setItem('user', JSON.stringify(userData));
-      console.log('📝 Session disimpan, redirect ke', currentRole + '.html');
-      window.location.href = `${currentRole}.html`;
+      
+      // ✅ PERBAIKAN PATH: redirect ke folder examshield/
+      console.log('📝 Session disimpan, redirect ke examshield/' + currentRole + '.html');
+      window.location.href = `examshield/${currentRole}.html`;
 
     } catch (error) {
       console.error('❌ Login error:', error);
@@ -88,7 +84,6 @@ if (document.getElementById('loginForm')) {
     }
   });
 
-  // Toggle Password
   document.querySelectorAll('.toggle-pass').forEach(btn => {
     btn.addEventListener('click', () => {
       const input = document.getElementById(btn.dataset.target);
@@ -107,7 +102,7 @@ if (logoutBtn) {
     if (confirm('Yakin ingin keluar?')) {
       await supabaseClient.auth.signOut();
       sessionStorage.removeItem('user');
-      window.location.href = 'index.html';
+      window.location.href = '../index.html'; // ✅ Kembali ke root
     }
   });
 }
@@ -149,22 +144,22 @@ function requireAuth(role) {
   const userStr = sessionStorage.getItem('user');
   if (!userStr) {
     console.log('⚠️ Tidak ada session, redirect ke login');
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
     return null;
   }
   
   try {
     const user = JSON.parse(userStr);
     if (!user.profile || user.profile.role !== role) {
-      console.log('️ Role tidak cocok, redirect ke login');
-      window.location.href = 'index.html';
+      console.log('⚠️ Role tidak cocok, redirect ke login');
+      window.location.href = '../index.html';
       return null;
     }
     console.log('✅ Auth guard passed untuk', role);
     return user;
   } catch (error) {
     console.error('Error parse session:', error);
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
     return null;
   }
 }
