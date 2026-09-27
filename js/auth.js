@@ -1,5 +1,5 @@
 // ============================================
-// LOGIKA LOGIN & AUTENTIKASI
+// LOGIKA LOGIN & AUTENTIKASI (FINAL VERSION)
 // ============================================
 
 if (document.getElementById('loginForm')) {
@@ -16,14 +16,22 @@ if (document.getElementById('loginForm')) {
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const email = document.getElementById('username').value.trim();
+    let username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
     const err = document.getElementById('loginError');
     
     err.classList.add('hidden');
 
     try {
-      console.log('🔄 Login attempt for:', email);
+      console.log('🔄 Login attempt for:', username, 'as', currentRole);
+      
+      // ✅ AUTO-CONVERT: Jika tidak ada @, tambahkan domain
+      let email = username;
+      if (!email.includes('@')) {
+        email = `${username.toLowerCase()}@examshield.id`;
+      }
+      
+      console.log('📧 Email login:', email);
       
       const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
         email: email,
@@ -73,8 +81,7 @@ if (document.getElementById('loginForm')) {
       
       sessionStorage.setItem('user', JSON.stringify(userData));
       
-      // ✅ PERBAIKAN PATH: redirect ke folder examshield/
-      console.log('📝 Session disimpan, redirect ke examshield/' + currentRole + '.html');
+      console.log('📝 Session disimpan, redirect ke examshied/' + currentRole + '.html');
       window.location.href = `examshied/${currentRole}.html`;
 
     } catch (error) {
@@ -102,7 +109,7 @@ if (logoutBtn) {
     if (confirm('Yakin ingin keluar?')) {
       await supabaseClient.auth.signOut();
       sessionStorage.removeItem('user');
-      window.location.href = '../index.html'; // ✅ Kembali ke root
+      window.location.href = '../index.html';
     }
   });
 }
@@ -143,7 +150,7 @@ document.querySelectorAll('[data-close]').forEach(btn => {
 function requireAuth(role) {
   const userStr = sessionStorage.getItem('user');
   if (!userStr) {
-    console.log('⚠️ Tidak ada session, redirect ke login');
+    console.log('️ Tidak ada session, redirect ke login');
     window.location.href = '../index.html';
     return null;
   }
